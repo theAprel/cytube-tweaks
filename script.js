@@ -1,8 +1,8 @@
 //editable values to customize for each channel
-const chat_host = 'sg4e';
+var chat_host = 'sg4e';
 //end editable values
 
-const chat_frame = '<iframe frameborder="0" ' +
+var chat_frame = '<iframe frameborder="0" ' +
         'scrolling="no" ' +
         'id="' + chat_host + '" ' +
         'src="https://www.twitch.tv/embed/' + chat_host + '/chat?darkpopout" ' +
@@ -10,14 +10,15 @@ const chat_frame = '<iframe frameborder="0" ' +
         'width="350">' +
         '</iframe>';
 
-const popout_chat = 'https://www.twitch.tv/popout/' + chat_host + '/chat';
+var popout_chat = 'https://www.twitch.tv/popout/' + chat_host + '/chat';
 
 var chat_element = $("#chatwrap");
+var video_element = $("#videowrap");
 chat_element.html(chat_frame);
 
 var hide_chat_text = "Hide chat";
 var is_chat_hidden = false;
-const button_css_class = "btn btn-sm btn-default";
+var button_css_class = "btn btn-sm btn-default";
 var hide_chat_button = $('<button/>', {
     "class": button_css_class,
     text: hide_chat_text,
@@ -48,9 +49,64 @@ var popout_chat_button = $('<button/>', {
 });
 button_div.append(popout_chat_button);
 
+var elements_to_hide_for_theater_mode = [$("#videowrap-header"), $("nav")];
+var is_in_theater_mode = false;
+var theater_mode_on_string = "Theater mode on";
+
 var resize_chat = function() {
-    $("#" + chat_host).attr("height", $("#videowrap").height());
+    $("#" + chat_host).attr("height", video_element.height());
 };
+
+var theater_button = $('<button/>', {
+    "class": button_css_class,
+    text: theater_mode_on_string,
+    click: function() {
+        if(is_in_theater_mode) {
+            elements_to_hide_for_theater_mode.forEach(function (element) {
+                element.show();
+            });
+            video_element.removeAttr("style");
+            $("#mainpage").css("padding-top", "60px");
+            resize_chat();
+            theater_button.text(theater_mode_on_string);
+            is_in_theater_mode = false;
+        }
+        else {
+            elements_to_hide_for_theater_mode.forEach(function (element) {
+                element.hide();
+            });
+            $("#mainpage").css("padding-top", "0px");
+            var videoHeight = video_element.height();
+            var videoWidth = video_element.width();
+            var windowHeight = window.innerHeight;
+            var windowWidth = window.innerWidth;
+            if(!is_chat_hidden) {
+                windowWidth -= 350 + 20; //needs some buffering space or chat flows over
+            }
+            //be lazy with math; that's what we have CPUs for
+            //scale up width to fill window; then if it's too big, maximize height instead
+            var widthScale = windowWidth * 1.0 / videoWidth;
+            if(videoHeight * widthScale > windowHeight) {
+                //too big; fit height to window instead
+                var heightScale = windowHeight * 1.0 / videoHeight;
+                videoHeight = windowHeight;
+                videoWidth = Math.round(videoWidth * heightScale);
+            }
+            else {
+                //it's not too big; now scale the height
+                videoWidth = windowWidth;
+                videoHeight = Math.round(videoHeight * widthScale);
+            }
+            video_element.css("height", videoHeight + "px");
+            video_element.css("width", videoWidth + "px");
+            resize_chat();
+            theater_button.text("Theater mode off");
+            is_in_theater_mode = true;
+        }
+    }
+});
+
+button_div.append(theater_button);
 
 $("#resize-video-larger").click(resize_chat);
 $("#resize-video-smaller").click(resize_chat);
