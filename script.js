@@ -12,6 +12,11 @@ var chat_frame = '<iframe frameborder="0" ' +
 
 var popout_chat = 'https://www.twitch.tv/popout/' + chat_host + '/chat';
 
+//change layout to the preset that most closely resembles Twitch
+USEROPTS.layout = "synchtube-fluid";
+storeOpts();
+applyOpts();
+
 var chat_element = $("#chatwrap");
 var video_element = $("#videowrap");
 chat_element.html(chat_frame);
