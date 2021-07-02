@@ -1,5 +1,5 @@
 //editable values to customize for each channel
-var chat_host = 'sg4e';
+var chat_host = 'cytube_username';
 //end editable values
 
 var chat_frame = '<iframe frameborder="0" ' +
